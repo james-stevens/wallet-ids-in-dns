@@ -136,11 +136,13 @@ Each part of a DNS hostname can be up to 63 characters. If a wallet id is longer
 
 ### HEX vs BASE64 formats
 
-Cryptocurrency Wallet Ids come in one of two formats, `base64` and `hex`. Base64 ids will be numbers & mixed upper & lower case letter and NOT have an `0x` prefix. Hex ids will start with the prefix `0x` and consist of numbers and the letters `A` to `F` (or `a` to `f`) only. Hex ids are NOT case sensitive, base64 ids ARE case sensitive.
+Cryptocurrency Wallet Ids come in one of two formats, `base64` and `hex`. Base64 ids will be numbers and mixed upper & lower case letter and NOT have an `0x` prefix. Hex ids will start with the prefix `0x` and consist of numbers and the letters `A` to `F` (or `a` to `f`) only. Hex ids are NOT case sensitive, base64 ids ARE case sensitive. They are essentially just different formats for representing the same information as the underlying wallet id is actually binary.
 
-DNS specifications state that DNS host names can be mixed case and that the case of the lettering must be retained, but that host names should be searched for ignoring the case. The case insensitive search can lead to some DNS software folding all names to lower case to make searches faster. Technically this is incorrect, but it is quite common.
+DNS specifications state that DNS host names can be mixed case and that the case of the lettering must be retained, but that host names should be searched for ignoring the case. This case insensitive search requirement can lead to some DNS software folding all names to lower case to make searches faster. Technically this is incorrect, but it can be quite common.
 
-Therefore, if you are using these kinds of "fake" `NS` records to communicate wallet ids to a registry, is is recommended that they are always communicated in `HEX` format, as this is NOT case sensitive. It should be possible for a registrar, that support this specification, to store wallet ids in either `base64` or `hex` format, but convert them to `hex` format for the purposes of communicating them to the registry. Although the end user may find it easier to only specify `hex` in the first place as this might make it easier for them to check their wallet ids have been communicated to the registry correctly.
+Therefore, if you are using these kinds of "fake" `NS` records to communicate wallet ids to a registry, is is recommended that they are always communicated in `HEX` format, as this is NOT case sensitive. 
+
+It should be possible for a registrar, that supports this specification, to store wallet ids in either `base64` or `hex` format, but convert them to `hex` format for the purposes of communicating them to the registry. Although the end user may find it easier to only specify `hex` in the first place, as this might make it easier for them to check their wallet ids have been communicated to the registry correctly.
 
 
 ### Notes to registrars
@@ -151,11 +153,11 @@ Domain Name Registrars that want to support this functionality should provide th
 
 # Advice to Clients
 
-Client software wishing to make a payment can then do a simple DNS lookup to retrieve the wallets ids of the person to be paid.
+Client software wishing to make a payment can then do a simple DNS lookup to retrieve the wallets ids of the person to be paid. This should be done at the time the payer enters the address, so they know immediately if a wallet id can be found for the wallet address they have just given.
 
-Where a wallet tag has been specified, but can not be found, the client should not fall back to any default wallet (if present), but instead present the payer with some sort of error message. DNS is usually sufficiently fast that it should be relatively trivial to do a look up live.
+Where a wallet tag has been specified, but can not be found, the client should not fall back to any default wallet (if present), but instead present the payer with an error message. DNS is usually sufficiently fast that it should be relatively trivial to do a look up live.
 
-Where no `TXT` records exist for the waiiet name given, payers should also be warned at the time the wallet name is presented.
+Where no `TXT` records exist for the wallet name given, payers should also be warned at the time the wallet name is presented.
 
 
 # Reserve Wallet Id Lookup
