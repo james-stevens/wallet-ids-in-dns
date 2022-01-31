@@ -1,10 +1,10 @@
-# Proposal for publishing crypto wallet ids in DNS
+# Giving Your Crypto Wallet a Name, using DNS
 
 # Introduction
 
 DNS was created top provide a way to attach a human-readable name to a piece of technical data. Crypto Wallet Ids seem to fit this model.
 
-In the past it has been common to use custom DNS records types for different data records, but approval can takes ages and updating the infrastructure takes time, so more recently the use of `TXT` records has been preferred.
+In the past it has been common to use custom DNS records types for different data records, but approval can takes ages and updating the infrastructure takes even longer, so more recently the use of `TXT` records has been preferred.
 
 The aim is to be able to move from something like "please pay `btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m`" to something more like "please pay `my-name.tld`"
 
@@ -16,13 +16,24 @@ A previous proposal was published by [Mattias Geniar](https://ma.ttias.be/propos
 
 In his proposal, Mattias Geniar suggests including a numeric `priority` field, similar to an `MX` record. Although interesting, I think it would be more useful to have a text string "tag" to make it easier to direct people to different wallet ids, with the option of no tag to indicate that to be a default wallet.
 
+
 # Proposal
 
-## Security
+## Wallet Name Format
 
-In order to ensure your wallet ids can not be tampered with (e.g. DNS poisoning), when storing your wallet ids in standard DNS zone data, it is **highly** recommended that the DNS zone that stores your wallet ids is signed, using DNSSEC. That way the client can cryptographically validate the data.
+Wallet names are defined in the same style as URL in the form `<idenifier>`://`[ <currency>@ ]<dns-name>[ /<tag>]`
 
-If the records are being stored in a blockchain backed DNS technology, this is not required / relevant.
+So the record identifier (the fixed string `ico`) in the protocol field, the DNS name in the host name field and the `tag` as the path. With the currency as an optional prefix to the host name followed by `@`. So the full URL for our exmaple wallets would be
+
+    ico://btc@my-name.tld/
+    ico://ltc@my-name.tld/
+    ico://btc@my-name.tld/business
+    ico://btc@my-name.tld/biz
+
+In many circumstances the context of the information will make the prefix of the protocol, &/or currency, unnecessary. So "please pay me in bitcoin at `my-name.tld`" or "please pay `btc@my-name.tld`" can make make the one or two prefixes unnecessary, or (for exmaple) if you are specfying a wallet on an auction site that only holds auctions in `eth`, then the `eth@` prefix is redundant.
+
+Where there may be confusion between the shortened version and an email address, but the user prefers to not use the full URL style format, prefixing the cryptocurrency name with a dollar (`$`) sign can be used to clarify that this is a crypto wallet name. For example, `$btc@my-name.tld` or `$my-name.tld`. The dollar sign prefix should not be used when specifying the full URL format - `ico://....`.
+
 
 
 ## DNS Storage Format
@@ -81,18 +92,38 @@ Each will give the client's wallet a slightly different name. The wallet hosting
 
 
 
-# Wallet Name Format
 
-Wallet names can then be defined in the same style as URLs, with the record identifier (see above) as the protocol field, the host name in the host name field and the tag as the path. With the currency as an optional prefix to the host name followed by `@`. So the full URL for these wallets would be
+### Some Basic DNS Rules You Need to Know
 
-    ico://btc@my-name.tld/
-    ico://ltc@my-name.tld/
-    ico://btc@my-name.tld/business
-    ico://btc@my-name.tld/biz
+There are two basic DNS rules you may need to know.
 
-In many circumstances the context of the information will make the prefix of the protocol, &/or currency, unnecessary. So "please pay me in bitcoin at `my-name.tld`" or "please pay `btc@my-name.tld`" can make make the one or two prefixes unnecessary.
+#### 1. The CNAME Rule
 
-Where there may be confusion with an email address, but the user prefers to not use the full URL style format, prefixing the cryptocurrency name with a dollar (`$`) sign can be used to ensure it is know this is a crypto wallet name. For example, `$btc@my-name.tld`. The dollar sign prefix should not be used when specifying the full URL format - `ico://....`.
+If a `CNAME` record exists for a host, **NO** other records of any type can exist for that host name. A `CNAME` is like an alias to another host name, so all data must exist at the destination host name, no data can exist at the `CNAME`.
+
+         cash.name.tld. 86400 IN CNAME wallet.my-name.tld.
+
+In this example, the name `cash.name.tld` can **ONLY** have a `CNAME`, so any `TXT` records must exist at the destination host, in this example `wallet.my-name.tld`.
+
+
+#### 2. The NS Rule
+
+If a domain has `NS` records it is defined as a sub-domain. All data for the sub-domain can only exist in the zone file for the sub-domain. The only other permitted record type in the parent zone is `DS`, which is used to validate DNSSEC. Any other records types in the parent zone will be silently ignored. In circumstances crcumstances IP Address records can exist, but they **MUST** also be repeated in the sub-domain's zone file.
+
+For example
+
+        example. 86400 IN NS ns1.example.
+        example. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+
+In this case the `NS` record defines `example.` as a sub-domain, so the `TXT` record will be silently ignored and instead be placed in the DNS records for the sub-domain. But in this example, IP Addresses records for `ns1.example.` should be provided, but the `NS` records & IP Address records **MUST** also be repeated in the sub-domain data for `example.`.
+
+
+
+### DNS and Security
+
+In order to ensure your wallet ids can not be tampered with (e.g. DNS poisoning), when storing your wallet names & ids in standard DNS zone data, it is **highly** recommended that the DNS zone that stores your wallet ids is signed, using DNSSEC. That way the client can cryptographically validate the data.
+
+If the records are being stored in a blockchain backed DNS technology, this is not required / relevant.
 
 
 # Storing A Wallet in a TLD Zone
@@ -153,11 +184,13 @@ Domain Name Registrars that want to support this functionality should provide th
 
 # Advice to Clients
 
-Client software wishing to make a payment can then do a simple DNS lookup to retrieve the wallets ids of the person to be paid. This should be done at the time the payer enters the address, so they know immediately if a wallet id can be found for the wallet address they have just given.
+Client software & UI/UX's wishing to make a payment can now do a simple DNS lookup to retrieve the wallets ids of the person to be paid. This should be done at the time the payer enters the address, so they know immediately if a wallet id can be found for the wallet address they have just given.
 
 Where a wallet tag has been specified, but can not be found, the client should not fall back to any default wallet (if present), but instead present the payer with an error message. DNS is usually sufficiently fast that it should be relatively trivial to do a look up live.
 
 Where no `TXT` records exist for the wallet name given, payers should also be warned at the time the wallet name is presented.
+
+All clients should support accepting wallet names in full unicode format, allowing for the full range of unicode characters, then automatically convert the host name & (optional) tag into punycode. It is likely accepting the user's input in UTF-8 will be the most convenient for this. Library code for doing a UTF-8 to punycode conversion is available in many development environments / programming languages.
 
 
 # Reserve Wallet Id Lookup
