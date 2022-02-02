@@ -10,6 +10,9 @@ The aim is to be able to move from something like "please pay `btc:1AeCyEczAFPVK
 
 By storing the wallets in DNS `TXT` records, it should be possible to store them in a variety of different DNS infrastructures such as the Handshake Blockchain, the ETH/DNS blockchain or any standard DNS zone file.
 
+I am fully aware of the [HIP-0002](https://hsd-dev.org/HIPs/proposals/0002/) proposal, I just felt it has quite a lot of prerequisites, so creates quite a high barrier to entry. I wanted to propose something much simpler & easier to set-up. For example, `DANE` validation is significanly more complex to set up and validate. It will also take longer to both retrieve & validate than my proposal. The proposal also doesn't seem to describe various areas of functionality I felt needed flashing out.
+
+
 
 ## Inspiration
 A previous proposal was published by [Mattias Geniar](https://ma.ttias.be/proposal-cryptocurrency-addresses-dns/), which seems pretty reasonable to me, so I've taken inspiration from it.
