@@ -6,6 +6,12 @@ You can test it out using the `tst_wallet.py` wrapper.
 When you provide the wallet name, you **must** provide the coin name. The wallet name can optionally have either a `$` or `ico://` prefix.
 
 
+## NOTE
+
+NOTE: It will trigger an exception if the wallet name records are *NOT* signed with DNSSEC.
+
+
+
 # Future
 
 In the furture I will add code to make this work as a micro-service using `nginx` & `flask`
