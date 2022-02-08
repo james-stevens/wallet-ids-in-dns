@@ -47,7 +47,7 @@ class Wallet:  # pylint: disable=too-few-public-methods
             self.tag = ""
 
         if not validation.is_valid_host(self.hostname):
-            raise ValueError("The hostname in the wallet name is invalid")
+            raise ValueError(f"Hostname '{self.hostname}' failed validation")
 
     def resolv(self):
         """ get the wallet id from the wallet name """

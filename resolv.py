@@ -35,7 +35,7 @@ class Query: # pylint: disable=too-few-public-methods
     """ build a DNS query & resolve it """
     def __init__(self, name, rdtype):
         if not validation.is_valid_host(name):
-            raise Exception('spam', 'eggs')
+            raise ValueError(f"Hostname '{name}' failed validation")
 
         self.name = name
         self.rdtype = rdtype
@@ -55,7 +55,7 @@ class Resolver:
         self.qryid = None
         self.reply = None
         if not validation.is_valid_host(qry.name):
-            raise ValueError("Invalid host name")
+            raise ValueError(f"Hostname '{qry.name}' failed validation")
 
         rdtype = qry.rdtype
         if isinstance(rdtype,int):
