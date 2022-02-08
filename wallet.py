@@ -70,7 +70,7 @@ class Wallet:  # pylint: disable=too-few-public-methods
                 for f in each_ans["data"][1:-1].split(" ") if f.find(":") >= 0
             }
 
-            if "tag" not in fields:
+            if "tag" not in fields or fields["tag"] == "default":
                 fields["tag"] = ""
 
             if fields["tag"] != self.tag:
