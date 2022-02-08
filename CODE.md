@@ -25,3 +25,13 @@ This was tested on Alpine v3.13 with Python v3.8.10 and dnspython v2.0.0
 All code is PEP8 & passes `pylint` (with a few minor disables)
 
 You can also run `./tst_resolv.py` to test just the DNS lookup part.
+
+
+# Example
+
+	$ ./tst_wallet.py -w 'btc@jrcs.net/default'
+	{
+	"coin": "btc",
+	"wallet_id": "3MU5WsLWqbK6o9buaD4HtXK1KgozcV8BWj"
+	}
+
