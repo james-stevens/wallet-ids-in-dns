@@ -24,4 +24,4 @@ This was tested on Alpine v3.13 with Python v3.8.10 and dnspython v2.0.0
 
 All code is PEP8 & passes `pylint` (with a few minor disables)
 
-You can run `./tst_resolv` to test just the DNS lookup part.
+You can also run `./tst_resolv.py` to test just the DNS lookup part.
