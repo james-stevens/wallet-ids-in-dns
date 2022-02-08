@@ -35,4 +35,4 @@ You can also run `./tst_resolv.py` to test just the DNS lookup part.
 	"wallet_id": "3MU5WsLWqbK6o9buaD4HtXK1KgozcV8BWj"
 	}
 
-(if you have any $BTC spare, feel free to send me some)
+(if you have any $btc spare, feel free to send me some)
