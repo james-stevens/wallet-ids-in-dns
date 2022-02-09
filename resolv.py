@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 # (c) Copyright 2019-2022, James Stevens ... see LICENSE for details
 # Alternative license arrangements possible, contact me for more information
-
 """ module to resolve DNS queries into DoH JSON objects """
 
 import socket
@@ -21,8 +20,9 @@ DNS_FLAGS = {
     "AA": 0x0400,
     "TC": 0x0200,
     "RD": 0x0100,
-    "CD": 0x20,
-    "AD": 0x40,
+    "AA": 0x10,
+    "AD": 0x20,
+    "CD": 0x40,
     "RA": 0x80
 }
 
@@ -31,7 +31,7 @@ if "DOH_SERVERS" in os.environ:
     dohServers = os.environ["DOH_SERVERS"].split(",")
 
 
-class Query: # pylint: disable=too-few-public-methods
+class Query:  # pylint: disable=too-few-public-methods
     """ build a DNS query & resolve it """
     def __init__(self, name, rdtype):
         if not validation.is_valid_host(name):
@@ -39,8 +39,7 @@ class Query: # pylint: disable=too-few-public-methods
 
         self.name = name
         self.rdtype = rdtype
-        self.flag_do = True
-        self.flag_cd = True
+        self.with_dnssec = True
         self.servers = ["8.8.8.8", "1.1.1.1"]
 
     def resolv(self):
@@ -57,12 +56,10 @@ class Resolver:
         if not validation.is_valid_host(qry.name):
             raise ValueError(f"Hostname '{qry.name}' failed validation")
 
-        rdtype = qry.rdtype
-        if isinstance(rdtype,int):
-            if rdtype.isdigit():
-                rdtype = int(rdtype)
-            else:
-                rdtype = dns.rdatatype.from_text(rdtype)
+        if isinstance(qry.rdtype, int):
+            rdtype = int(qry.rdtype)
+        else:
+            rdtype = dns.rdatatype.from_text(qry.rdtype)
 
         if hasattr(qry, "servers"):
             self.servers = qry.servers
@@ -81,7 +78,7 @@ class Resolver:
         self.tries = 0
         msg = dns.message.make_query(qry.name,
                                      rdtype,
-                                     want_dnssec=(qry.flag_do or qry.flag_cd))
+                                     want_dnssec=qry.with_dnssec)
 
         self.question = bytearray(msg.to_wire())
 
@@ -92,7 +89,8 @@ class Resolver:
             try:
                 sent_len = self.sock.sendto(self.question, (each_svr, 53))
                 ret = ret or (sent_len == len(self.question))
-            except Exception as exp: # pylint: disable=unused-variable,broad-except
+            # pylint: disable=unused-variable,broad-except
+            except Exception as exp:
                 pass
 
         return ret  # True if at least one worked
@@ -146,7 +144,7 @@ class Resolver:
     def decode_reply(self):
         """ decode binary {message} in DNS format to dictionary in DoH fmt """
         msg = dns.message.from_wire(self.reply)
-        if (msg.flags & 0x8000) == 0:
+        if (msg.flags & DNS_FLAGS["QR"]) == 0:
             return None  # REPLY flag not set
 
         out = {}
@@ -154,7 +152,7 @@ class Resolver:
         for flag in DNS_FLAGS:
             out[flag] = (msg.flags & DNS_FLAGS[flag]) != 0
 
-        out["Flags"] = {flag: True for flag in DNS_FLAGS if out[flag]}
+        out["Flags"] = [flag for flag in DNS_FLAGS if out[flag]]
 
         out["Status"] = msg.rcode()
 

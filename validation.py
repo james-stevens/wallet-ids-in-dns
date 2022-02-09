@@ -6,7 +6,7 @@
 import re
 import socket
 
-is_valid_host_re = re.compile(r'^([0-9a-z][-\w]*[0-9a-z]\.)+[a-z0-9\-]{2,15}$')
+is_valid_host_re = re.compile(r'^[0-9a-zA-Z.]{2,255}$')
 
 
 def is_valid_host(host):

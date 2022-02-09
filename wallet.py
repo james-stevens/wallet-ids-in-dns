@@ -54,8 +54,7 @@ class Wallet:  # pylint: disable=too-few-public-methods
         qry = resolv.Query(self.hostname, "TXT")
         qry.servers = self.servers
         ans = qry.resolv()
-        if "CD" not in ans or not ans["CD"]:
-            raise ValueError("CD flag (dnssec) missing or not set")
+        validated = ("AD" in ans["Flags"])
 
         if "Answer" not in ans:
             return None
@@ -78,9 +77,14 @@ class Wallet:  # pylint: disable=too-few-public-methods
 
             if self.coin in fields:
                 self.wallet_id = {
+                    "hostname": self.hostname,
+                    "validated": validated,
                     "coin": self.coin,
                     "wallet_id": fields[self.coin]
                 }
+                if self.tag != "":
+                    self.wallet_id["tag"] = self.tag
+
                 return self.wallet_id
 
         return None
