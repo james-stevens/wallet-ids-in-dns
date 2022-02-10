@@ -58,6 +58,7 @@ For example
 
 Where multiple wallet ids exist for the same currency, with the same tag, which actual wallet is selected is client-dependant, so should be avoided.
 
+
 Any host name can be used as a holder of a wallet id, so the following would be equally valid
 
     wallet.my-name.tld. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
@@ -194,6 +195,8 @@ Where a wallet tag has been specified, but can not be found, the client should n
 Where no `TXT` records exist for the wallet name given, payers should also be warned at the time the wallet name is presented.
 
 All clients should support accepting wallet names in full unicode format, allowing for the full range of unicode characters, then automatically convert the host name & (optional) tag into punycode. It is likely accepting the user's input in UTF-8 will be the most convenient for this. Library code for doing a UTF-8 to punycode conversion is available in many development environments / programming languages.
+
+If a wallet name is supplied that excludes a coin name, the client should select any one with a matching hostname and (optional) tag. Where more than one matching wallet name exists, which the client selects is not determined, so this should be avoided.
 
 
 # Reserve Wallet Id Lookup

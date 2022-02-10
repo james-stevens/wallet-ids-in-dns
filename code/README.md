@@ -6,11 +6,6 @@ You can test it out using the `tst_wallet.py` wrapper.
 When you provide the wallet name, you **must** provide the coin name. The wallet name can optionally have either a `$` or `ico://` prefix.
 
 
-## NOTE
-
-NOTE: It will trigger an exception if the wallet name records are *NOT* signed with DNSSEC.
-
-
 
 # Future
 
@@ -31,8 +26,11 @@ You can also run `./tst_resolv.py` to test just the DNS lookup part.
 
 	$ ./tst_wallet.py -w 'btc@jrcs.net/default'
 	{
+	"hostname": "jrcs.net",
+	"validated": true,
 	"coin": "btc",
 	"wallet_id": "3MU5WsLWqbK6o9buaD4HtXK1KgozcV8BWj"
 	}
+
 
 (if you have any $btc spare, feel free to send me some)
