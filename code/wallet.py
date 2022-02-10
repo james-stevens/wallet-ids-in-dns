@@ -7,6 +7,15 @@ import resolv
 import validation
 
 TXT_RR_TYPE_ID = 16
+reserved = {"tag": True}
+
+
+def find_coin(fields):
+    """ find the coin name used in this TXT """
+    for fld in fields:
+        if fld not in reserved:
+            return fld
+    return ""
 
 
 class Wallet:  # pylint: disable=too-few-public-methods
@@ -28,21 +37,24 @@ class Wallet:  # pylint: disable=too-few-public-methods
         if self.wallet_name[-1] == "/":
             self.wallet_name = self.wallet_name[:-1]
 
-        if self.wallet_name.find("@") < 0:
-            raise ValueError("No coin prefix in wallet name")
+        if self.wallet_name.find("@") >= 0:
+            self.coin = self.wallet_name.split("@")[0]
+            start_coin = len(self.coin) + 1
+        else:
+            start_coin = 0
+            self.coin = ""
 
-        self.coin = self.wallet_name.split("@")[0]
         if self.wallet_name.find("/") >= 0:
             slash = self.wallet_name.split("/")
             if len(slash) > 2:
                 raise ValueError("Only one part to the path name is supported")
 
             self.tag = slash[1]
-            self.hostname = self.wallet_name[len(self.coin) +
-                                             1:len(self.wallet_name) -
+            self.hostname = self.wallet_name[start_coin:len(self.wallet_name) -
                                              len(self.tag) - 1]
         else:
-            self.hostname = self.wallet_name[len(self.coin) + 1:]
+            self.hostname = self.wallet_name[start_coin:]
+
         if self.tag == "default":
             self.tag = ""
 
@@ -75,7 +87,10 @@ class Wallet:  # pylint: disable=too-few-public-methods
             if fields["tag"] != self.tag:
                 continue
 
-            if self.coin in fields:
+            if self.coin == "":
+                self.coin = find_coin(fields)
+
+            if self.coin != "" and self.coin in fields:
                 self.wallet_id = {
                     "hostname": self.hostname,
                     "validated": validated,
