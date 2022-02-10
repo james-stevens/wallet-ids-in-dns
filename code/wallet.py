@@ -5,6 +5,9 @@
 
 import resolv
 import validation
+import eth
+import servers
+import icann_tlds
 
 TXT_RR_TYPE_ID = 16
 reserved = {"tag": True}
@@ -20,13 +23,16 @@ def find_coin(fields):
 
 class Wallet:  # pylint: disable=too-few-public-methods
     """ translate a <wallet> name into a wallet id as a JSON, or None """
-    def __init__(self, wallet, servers="8.8.8.8,1.1.1.1"):
+    def __init__(self, wallet, servers=None):
         self.hostname = None
         self.coin = None
         self.tag = ""
         self.wallet_name = None
         self.wallet_id = None
-        self.servers = servers.split(",")
+        if servers is not None:
+            self.servers = servers.split(",")
+        else:
+            self.servers = None
 
         if wallet[0:6] == "ico://":
             self.wallet_name = wallet[6:]
@@ -63,9 +69,21 @@ class Wallet:  # pylint: disable=too-few-public-methods
 
     def resolv(self):
         """ get the wallet id from the wallet name """
-        qry = resolv.Query(self.hostname, "TXT")
-        qry.servers = self.servers
-        ans = qry.resolv()
+        tld = self.hostname.split(".")[-1];
+        if tld == "eth":
+            ans = eth.get_eth_txt(self.hostname)
+        else:
+            qry = resolv.Query(self.hostname, "TXT")
+            if tld in icann_tlds.ICANN_TLDS:
+                qry.servers = servers.ICANN_SERVER.split(",")
+            else:
+                qry.servers = servers.HANDSHAKE_SERVERS.split(",")
+
+            if self.servers is not None:
+                qry.servers = self.servers
+
+            ans = qry.resolv()
+
         validated = ("AD" in ans["Flags"])
 
         if "Answer" not in ans:

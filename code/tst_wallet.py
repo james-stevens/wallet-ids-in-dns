@@ -19,7 +19,6 @@ def run():
                         help="Wallet to find")
     parser.add_argument("-s",
                         "--servers",
-                        default="8.8.8.8,1.1.1.1",
                         help="Resolvers to query")
 
     args = parser.parse_args()
@@ -29,7 +28,7 @@ def run():
     if my_wallet.wallet_id is not None:
         print(json.dumps(my_wallet.wallet_id, indent=2))
     else:
-        print(f"ERROR: Wallet name '{args.wallet}' failed to lookup")
+        print(f"ERROR: No wallet named '{args.wallet}' could be found")
 
 
 if __name__ == "__main__":
