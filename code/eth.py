@@ -22,10 +22,9 @@ def get_eth_txt(hostname):
         resp = requests.request("get", url, headers=HEADERS)
         return json.loads(resp.content)
     except Exception as err:  # pylint: disable=broad-except
-        syslog(str(err))
-        return None
+        raise ValueError(f"Requst to {servers.eth_gateway} failed")
 
-    return None
+    raise ValueError("Unexpected error in ETH processing")
 
 
 if __name__ == "__main__":

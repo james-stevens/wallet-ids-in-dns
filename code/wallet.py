@@ -45,6 +45,7 @@ class Wallet:  # pylint: disable=too-few-public-methods
             self.wallet_name = wallet
 
         self.parse_wallet_name()
+        self.resolv()
 
     def parse_wallet_name(self):
         """ break out the wallet name into its component parts """
@@ -99,7 +100,7 @@ class Wallet:  # pylint: disable=too-few-public-methods
         ans = self.get_doh_data()
 
         if "Answer" not in ans:
-            return None
+            raise ValueError(f"No TXT RRs could be found for '{self.hostname}/{self.tag}'")
 
         for each_ans in ans["Answer"]:
             if each_ans["type"] != TXT_RR_TYPE_ID or each_ans["data"][
@@ -127,6 +128,7 @@ class Wallet:  # pylint: disable=too-few-public-methods
                     "hostname": self.hostname,
                     "validated": validated,
                     "coin": self.coin,
+                    "wallet_name": self.wallet_name,
                     "wallet_id": fields[self.coin]
                 }
                 if self.tag != "":
@@ -134,7 +136,7 @@ class Wallet:  # pylint: disable=too-few-public-methods
 
                 return self.wallet_id
 
-        return None
+        raise ValueError(f"No matching TXT could be found for '{self.hostname}/{self.tag}'")
 
 
 def run():
@@ -149,12 +151,14 @@ def run():
 
     args = parser.parse_args()
 
-    my_wallet = Wallet(args.wallet, local_servers=args.servers)
-    my_wallet.resolv()
-    if my_wallet.wallet_id is not None:
-        print(json.dumps(my_wallet.wallet_id, indent=2))
-    else:
-        print(f"ERROR: No wallet named '{args.wallet}' could be found")
+    try:
+        my_wallet = Wallet(args.wallet, local_servers=args.servers)
+        if my_wallet.wallet_id is not None:
+            print(json.dumps(my_wallet.wallet_id, indent=2))
+        else:
+            print(f"ERROR: No wallet named '{args.wallet}' could be found")
+    except ValueError as err:  # pylint: disable=broad-except
+        print(f"ERROR: {str(err)}")
 
 
 if __name__ == "__main__":
