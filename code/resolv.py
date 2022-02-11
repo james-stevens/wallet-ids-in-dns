@@ -3,6 +3,7 @@
 # Alternative license arrangements possible, contact me for more information
 """ module to resolve DNS queries into DoH JSON objects """
 
+from syslog import syslog
 import socket
 import select
 import argparse
@@ -22,7 +23,6 @@ DNS_FLAGS = {
     "AA": 0x0400,
     "TC": 0x0200,
     "RD": 0x0100,
-    "AA": 0x10,
     "AD": 0x20,
     "CD": 0x40,
     "RA": 0x80
@@ -92,8 +92,8 @@ class Resolver:
                 sent_len = self.sock.sendto(self.question, (each_svr, 53))
                 ret = ret or (sent_len == len(self.question))
             # pylint: disable=unused-variable,broad-except
-            except Exception as exp:
-                pass
+            except Exception as err:
+                syslog(str(err))
 
         return ret  # True if at least one worked
 
@@ -154,8 +154,6 @@ class Resolver:
         for flag in DNS_FLAGS:
             out[flag] = (msg.flags & DNS_FLAGS[flag]) != 0
 
-        out["Flags"] = [flag for flag in DNS_FLAGS if out[flag]]
-
         out["Status"] = msg.rcode()
 
         out["Question"] = [{
@@ -178,7 +176,6 @@ class Resolver:
         return out
 
 
-
 def main():
     """ main """
     parser = argparse.ArgumentParser(
@@ -199,11 +196,10 @@ def main():
 
     if not validation.is_valid_host(args.name):
         print(f"ERROR: '{args.name}' is an invalid host name")
-        sys.exit(1)
-
-    qry = Query(args.name, args.rdtype)
-    qry.servers = args.servers.split(",")
-    print(json.dumps(qry.resolv(), indent=2))
+    else:
+        qry = Query(args.name, args.rdtype)
+        qry.servers = args.servers.split(",")
+        print(json.dumps(qry.resolv(), indent=2))
 
 
 if __name__ == "__main__":

@@ -3,11 +3,11 @@
 # Alternative license arrangements possible, contact me for more information
 """ translate a <wallet name> into a <wallet id> """
 
-import requests
+from syslog import syslog
 import json
+import requests
 
 import servers
-import resolv
 
 HEADERS = {
     'Content-type': 'application/dns-json',
@@ -16,15 +16,13 @@ HEADERS = {
 
 
 def get_eth_txt(hostname):
-    url = f"https://{servers.ETH_GATEWAY}?type=TXT&name={hostname}"
+    """ load TXT DNS data for {hostname} & return in DoH format """
+    url = f"https://{servers.eth_gateway}?type=TXT&name={hostname}"
     try:
-        r = requests.request("get", url, headers=HEADERS)
-        resjs = json.loads(r.content)
-        resjs["Flags"] = [
-            flag for flag in resolv.DNS_FLAGS if flag in resjs and resjs[flag]
-        ]
-        return resjs
-    except Exception as err:
+        resp = requests.request("get", url, headers=HEADERS)
+        return json.loads(resp.content)
+    except Exception as err:  # pylint: disable=broad-except
+        syslog(str(err))
         return None
 
     return None

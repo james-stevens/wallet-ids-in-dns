@@ -26,14 +26,14 @@ def find_coin(fields):
 
 class Wallet:  # pylint: disable=too-few-public-methods
     """ translate a <wallet> name into a wallet id as a JSON, or None """
-    def __init__(self, wallet, servers=None):
+    def __init__(self, wallet, local_servers=None):
         self.hostname = None
         self.coin = None
         self.tag = ""
         self.wallet_name = None
         self.wallet_id = None
-        if servers is not None:
-            self.servers = servers.split(",")
+        if local_servers is not None:
+            self.servers = local_servers.split(",")
         else:
             self.servers = None
 
@@ -43,6 +43,12 @@ class Wallet:  # pylint: disable=too-few-public-methods
             self.wallet_name = wallet[1:]
         else:
             self.wallet_name = wallet
+
+        self.parse_wallet_name()
+
+    def parse_wallet_name(self):
+        """ break out the wallet name into its component parts """
+
         if self.wallet_name[-1] == "/":
             self.wallet_name = self.wallet_name[:-1]
 
@@ -68,26 +74,29 @@ class Wallet:  # pylint: disable=too-few-public-methods
             self.tag = ""
 
         if not validation.is_valid_host(self.hostname):
-            raise ValueError(f"Hostname '{self.hostname}' failed validation")
+            raise ValueError("Invalid host name")
+
+    def get_doh_data(self):
+        """ get dns TXT data for {self.hostname} in DoH format """
+        tld = self.hostname.split(".")[-1]
+
+        if tld == "eth":
+            return eth.get_eth_txt(self.hostname)
+
+        qry = resolv.Query(self.hostname, "TXT")
+        if tld in icann_tlds.tlds:
+            qry.servers = servers.icann_servers
+        else:
+            qry.servers = servers.handshake_servers
+
+        if self.servers is not None:
+            qry.servers = self.servers
+
+        return qry.resolv()
 
     def resolv(self):
         """ get the wallet id from the wallet name """
-        tld = self.hostname.split(".")[-1]
-        if tld == "eth":
-            ans = eth.get_eth_txt(self.hostname)
-        else:
-            qry = resolv.Query(self.hostname, "TXT")
-            if tld in icann_tlds.tlds:
-                qry.servers = servers.ICANN_SERVER.split(",")
-            else:
-                qry.servers = servers.HANDSHAKE_SERVERS.split(",")
-
-            if self.servers is not None:
-                qry.servers = self.servers
-
-            ans = qry.resolv()
-
-        validated = ("AD" in ans["Flags"])
+        ans = self.get_doh_data()
 
         if "Answer" not in ans:
             return None
@@ -112,6 +121,8 @@ class Wallet:  # pylint: disable=too-few-public-methods
                 self.coin = find_coin(fields)
 
             if self.coin != "" and self.coin in fields:
+                validated = ("AD" in ans and isinstance(ans["AD"], bool)
+                             and ans["AD"])
                 self.wallet_id = {
                     "hostname": self.hostname,
                     "validated": validated,
@@ -138,7 +149,7 @@ def run():
 
     args = parser.parse_args()
 
-    my_wallet = Wallet(args.wallet, servers=args.servers)
+    my_wallet = Wallet(args.wallet, local_servers=args.servers)
     my_wallet.resolv()
     if my_wallet.wallet_id is not None:
         print(json.dumps(my_wallet.wallet_id, indent=2))
