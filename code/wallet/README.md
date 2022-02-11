@@ -29,14 +29,15 @@ If you just run `ico_flask.py` it will run a debugging HTTP server on `127.0.0.1
 # Example
 
     $ ./wallet.py -w 'btc@jrcs.net/default'
-    {
-    "hostname": "jrcs.net",
-    "validated": true,
-    "coin": "btc",
-    "wallet_id": "3MU5WsLWqbK6o9buaD4HtXK1KgozcV8BWj"
-    }
+	{
+	  "hostname": "jrcs.net",
+	  "validated": true,
+	  "coin": "btc",
+	  "wallet_name": "btc@jrcs.net",
+	  "wallet_id": "3MU5WsLWqbK6o9buaD4HtXK1KgozcV8BWj"
+	}
 
-
+    
 (if you have any $btc spare, feel free to send me some)
 
 
