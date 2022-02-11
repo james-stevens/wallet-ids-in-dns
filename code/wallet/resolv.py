@@ -33,11 +33,15 @@ if "DOH_SERVERS" in os.environ:
     dohServers = os.environ["DOH_SERVERS"].split(",")
 
 
+class ResolvError(Exception):
+    """ custom error """
+
+
 class Query:  # pylint: disable=too-few-public-methods
     """ build a DNS query & resolve it """
     def __init__(self, name, rdtype):
         if not validation.is_valid_host(name):
-            raise ValueError(f"Hostname '{name}' failed validation")
+            raise ResolvError(f"Hostname '{name}' failed validation")
 
         self.name = name
         self.rdtype = rdtype
@@ -56,7 +60,7 @@ class Resolver:
         self.qryid = None
         self.reply = None
         if not validation.is_valid_host(qry.name):
-            raise ValueError(f"Hostname '{qry.name}' failed validation")
+            raise ResolvError(f"Hostname '{qry.name}' failed validation")
 
         if isinstance(qry.rdtype, int):
             rdtype = int(qry.rdtype)
@@ -70,11 +74,11 @@ class Resolver:
 
         for each_svr in qry.servers:
             if not validation.is_valid_ipv4(each_svr):
-                raise ValueError("Invalid IP v4 Address for a Server")
+                raise ResolvError("Invalid IP v4 Address for a Server")
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if self.sock is None:
-            raise OSError("Failed to open UDP client socket")
+            raise ResolvError("Failed to open UDP client socket")
 
         self.expiry = 2
         self.tries = 0

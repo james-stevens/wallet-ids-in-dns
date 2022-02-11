@@ -15,6 +15,10 @@ HEADERS = {
 }
 
 
+class EthError(Exception):
+    """ custom error """
+
+
 def get_eth_txt(hostname):
     """ load TXT DNS data for {hostname} & return in DoH format """
     url = f"https://{servers.eth_gateway}?type=TXT&name={hostname}"
@@ -22,9 +26,11 @@ def get_eth_txt(hostname):
         resp = requests.request("get", url, headers=HEADERS)
         return json.loads(resp.content)
     except Exception as err:  # pylint: disable=broad-except
-        raise ValueError(f"Requst to {servers.eth_gateway} failed")
+        syslog(str(err))
+        # pylint: disable=raise-missing-from
+        raise EthError(f"Requst to {servers.eth_gateway} failed - {str(err)}")
 
-    raise ValueError("Unexpected error in ETH processing")
+    raise EthError("Unexpected error in ETH processing")
 
 
 if __name__ == "__main__":

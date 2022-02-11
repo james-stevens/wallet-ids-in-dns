@@ -1,7 +1,7 @@
 # The `wallet` module
 
 The module `wallet.py` is provided to look up a wallet name & return `None` or a JSON object of the wallet id & coin type. 
-You can test it out using the `tst_wallet.py` wrapper.
+It has its own `main()` so you can test it by just running it.
 
 When you provide the wallet name, you **must** provide the coin name. The wallet name can optionally have either a `$` or `ico://` prefix.
 
@@ -19,7 +19,7 @@ This was tested on Alpine v3.13 with Python v3.8.10 and dnspython v2.0.0
 
 All code is PEP8 & passes `pylint` (with a few minor disables)
 
-You can also run `./tst_resolv.py` to test just the DNS lookup part.
+You can also run `./resolv.py` to test just the DNS lookup part.
 
 
 # Example

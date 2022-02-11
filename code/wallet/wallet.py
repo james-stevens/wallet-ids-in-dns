@@ -16,6 +16,10 @@ TXT_RR_TYPE_ID = 16
 reserved = {"tag": True}
 
 
+class WalletError(Exception):
+    """ custom error """
+
+
 def find_coin(fields):
     """ find the coin name used in this TXT """
     for fld in fields:
@@ -63,7 +67,8 @@ class Wallet:  # pylint: disable=too-few-public-methods
         if self.wallet_name.find("/") >= 0:
             slash = self.wallet_name.split("/")
             if len(slash) > 2:
-                raise ValueError("Only one part to the path name is supported")
+                raise WalletError(
+                    "Only one part to the path name is supported")
 
             self.tag = slash[1]
             self.hostname = self.wallet_name[start_coin:len(self.wallet_name) -
@@ -75,7 +80,7 @@ class Wallet:  # pylint: disable=too-few-public-methods
             self.tag = ""
 
         if not validation.is_valid_host(self.hostname):
-            raise ValueError("Invalid host name")
+            raise WalletError("Invalid host name")
 
     def get_doh_data(self):
         """ get dns TXT data for {self.hostname} in DoH format """
@@ -100,7 +105,8 @@ class Wallet:  # pylint: disable=too-few-public-methods
         ans = self.get_doh_data()
 
         if "Answer" not in ans:
-            raise ValueError(f"No TXT RRs could be found for '{self.hostname}/{self.tag}'")
+            raise WalletError(
+                f"No TXT RRs could be found for '{self.hostname}/{self.tag}'")
 
         for each_ans in ans["Answer"]:
             if each_ans["type"] != TXT_RR_TYPE_ID or each_ans["data"][
@@ -136,10 +142,11 @@ class Wallet:  # pylint: disable=too-few-public-methods
 
                 return self.wallet_id
 
-        raise ValueError(f"No matching TXT could be found for '{self.hostname}/{self.tag}'")
+        raise WalletError(
+            f"No matching TXT could be found for '{self.hostname}/{self.tag}'")
 
 
-def run():
+def main():
     """ main """
     parser = argparse.ArgumentParser(
         description='This is a wrapper to test the wallet code')
@@ -157,9 +164,9 @@ def run():
             print(json.dumps(my_wallet.wallet_id, indent=2))
         else:
             print(f"ERROR: No wallet named '{args.wallet}' could be found")
-    except ValueError as err:  # pylint: disable=broad-except
-        print(f"ERROR: {str(err)}")
+    except (WalletError, resolv.ResolvError, eth.EthError) as err:
+        print(f"ERROR: {err}")
 
 
 if __name__ == "__main__":
-    run()
+    main()
