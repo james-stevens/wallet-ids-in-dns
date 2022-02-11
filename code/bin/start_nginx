@@ -1,0 +1,88 @@
+#! /bin/sh
+# (c) Copyright 2019-2022, James Stevens ... see LICENSE for details
+# Alternative license arrangements possible, contact me for more information
+
+opts="daemon off;"
+conf="nginx.conf"
+
+mkdir -p /ram/nginx/
+
+if test -f /opt/certkey.pem
+	then
+		ln -s /opt/certkey.pem /ram/certkey.pem
+		touch -r /opt/certkey.pem /ram/certkey.date
+	else
+		ln -s /usr/local/etc/certkey.pem /ram/certkey.pem
+	fi
+
+{
+echo "
+worker_processes  3;
+pid /ram/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+user nginx;"
+
+if test "${ICO_SYSLOG_SERVER}"
+	then
+		echo "error_log syslog:server=${ICO_SYSLOG_SERVER},facility=daemon,tag=nginx error;"
+	else
+		echo "error_log       stderr error;"
+	fi
+
+echo "
+http {"
+
+if test "${ICO_SYSLOG_SERVER}"
+	then
+		echo "	access_log syslog:server=${ICO_SYSLOG_SERVER},facility=daemon,tag=nginx,severity=info;"
+    else
+		echo "access_log      off;"
+	fi
+
+echo "
+    include         mime.types;
+    default_type    application/octet-stream;
+    sendfile        on;
+    keepalive_timeout  65;
+
+    upstream ico_servers {
+"
+sessions=5
+if test "${ICO_SESSIONS}"; then sessions="${ICO_SESSIONS}"; fi
+x=0
+while test ${x} -lt ${sessions}
+	do
+		x=$(expr ${x} + 1)
+		echo "		server unix:/ram/ico_${x}.sock;"
+	done
+echo "
+        }
+
+    server {
+        listen 443 ssl;
+        server_name localhost;
+
+        ssl_certificate      /ram/certkey.pem;
+        ssl_certificate_key  /ram/certkey.pem;
+
+        ssl_session_cache    shared:SSL:1m;
+        ssl_session_timeout  5m;
+
+        ssl_ciphers  HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers  on;
+
+
+        location / {
+            proxy_pass http://ico_servers;
+        }
+    }
+}"
+
+} > /ram/${conf}
+
+sleep 1
+exec /usr/sbin/nginx -c /etc/nginx/${conf} -g "${opts}"

@@ -1,0 +1,22 @@
+#! /bin/sh
+# (c) Copyright 2019-2020, James Stevens ... see LICENSE for details
+# Alternative license arrangements possible, contact me for more information
+
+{
+echo "::respawn:/sbin/syslogd -n -O -"
+
+sessions=5
+if test "${ICO_SESSIONS}"; then sessions="${ICO_SESSIONS}"; fi
+x=0
+while test ${x} -lt ${sessions}
+    do
+        x=$(expr ${x} + 1)
+        echo "::respawn:/usr/local/bin/start_wsgi ${x}"
+    done
+
+echo "::respawn:/usr/local/bin/start_nginx"
+
+} > /ram/inittab
+
+
+exec /sbin/init
