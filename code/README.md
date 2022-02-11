@@ -17,8 +17,8 @@ The container provides an HTTPS service only. The URL for the api is `/ico/v1/ap
 
 ## Container Environment Variables
 
-| Env.Var | Use
-| ------- | ---
+| Variabe Name | Use
+| ------------ | ---
 | `ICO_ICANN_TLDS` | file to load the list of ICANN TLDs from (one per line, any order). This file *must* be mapped or loaded into the container, e.g. using `-v`
 | `ICO_ICANN_EXCLUDE` | TLDs that are in the ICANN list that should not be treated as ICANN TLDs
 | `ICO_ICANN_SERVERS` | Comma separated list of IP Addresses to send ICANN TLD queries to, using standard DNS over UDP. By default `8.8.8.8` & `1.1.1.1`
