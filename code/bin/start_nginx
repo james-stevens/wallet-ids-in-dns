@@ -20,30 +20,13 @@ echo "
 worker_processes  3;
 pid /ram/nginx.pid;
 
-events {
-    worker_connections  1024;
-}
+events { worker_connections  1024; }
 
-user nginx;"
+user nginx;
+error_log syslog:server=unix:/dev/log,facility=daemon,tag=nginx error;
 
-if test "${ICO_SYSLOG_SERVER}"
-	then
-		echo "error_log syslog:server=${ICO_SYSLOG_SERVER},facility=daemon,tag=nginx error;"
-	else
-		echo "error_log       stderr error;"
-	fi
-
-echo "
-http {"
-
-if test "${ICO_SYSLOG_SERVER}"
-	then
-		echo "	access_log syslog:server=${ICO_SYSLOG_SERVER},facility=daemon,tag=nginx,severity=info;"
-    else
-		echo "access_log      off;"
-	fi
-
-echo "
+http {
+	access_log syslog:server=unix:/dev/log,facility=daemon,tag=nginx,severity=info;
     include         mime.types;
     default_type    application/octet-stream;
     sendfile        on;
