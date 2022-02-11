@@ -24,7 +24,7 @@ You can also run `./tst_resolv.py` to test just the DNS lookup part.
 
 # Example
 
-	$ ./tst_wallet.py -w 'btc@jrcs.net/default'
+	$ ./wallet.py -w 'btc@jrcs.net/default'
 	{
 	"hostname": "jrcs.net",
 	"validated": true,
