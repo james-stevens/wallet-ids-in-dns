@@ -52,3 +52,5 @@ Requests for Handshake TLDs are sent to a Handshake Resolver I run - `bridge.jrc
 Requests for ETH/DNS domain are sent to the DoH service run by Cloudflare at http://eth.link/
 
 The destination of these categories of TLD can be tweaked using environment variables.
+
+NOTE: My Handshake resolver can resolve ICANN TLDs, but its faster to use the large public resolvers.
