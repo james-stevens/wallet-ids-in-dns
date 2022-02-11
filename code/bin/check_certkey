@@ -1,0 +1,10 @@
+#! /bin/sh
+# (c) Copyright 2019-2022, James Stevens ... see LICENSE for details
+# Alternative license arrangements possible, contact me for more information
+
+if test -f /opt/certkey.pem -a -f /ram/certkey.date \
+		-a /opt/certkey.pem -nt /ram/certkey.date
+    then
+		touch -r /opt/certkey.pem /ram/certkey.date
+		killall -HUP nginx
+	fi

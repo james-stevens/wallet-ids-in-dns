@@ -1,0 +1,6 @@
+#! /bin/sh
+
+img=$(cat dklist)
+rm -f ${img}.*
+docker image save -o ${img}.tar ${img}
+xz -v ${img}.tar

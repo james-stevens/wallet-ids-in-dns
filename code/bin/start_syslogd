@@ -1,0 +1,10 @@
+#! /bin/sh
+# (c) Copyright 2019-2022, James Stevens ... see LICENSE for details
+# Alternative license arrangements possible, contact me for more information
+
+if test "${SYSLOG_SERVER}"
+	then
+		exec /sbin/syslogd -n -b 9 -s 100000 -R ${SYSLOG_SERVER} -L
+	else
+		exec /sbin/syslogd -n -O -
+	fi
