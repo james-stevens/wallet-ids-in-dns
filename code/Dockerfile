@@ -15,6 +15,8 @@ RUN ln -s /dev/shm /var/lib/nginx/tmp
 RUN ln -s /dev/shm /var/log/nginx
 RUN ln -s /dev/shm /ram/nginx
 
+RUN addgroup nginx daemon
+
 COPY etc/crontab /etc/crontabs/root
 COPY etc /usr/local/etc/
 RUN rm -f /etc/inittab /etc/nginx/nginx.conf
