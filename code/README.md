@@ -12,6 +12,8 @@ on the file every hour, on the hour.
 
 `ico-wallet.tar.xz` is a `docker image save` of the container, created using the script `dump`.
 
+It can also be downloaded from https://hub.docker.com/r/jamesstevens/ico-wallet
+
 The container provides an HTTPS service only. The URL for the api is `/ico/v1/api?name=<wallet-name>`.
 
 

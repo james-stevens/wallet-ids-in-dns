@@ -2,7 +2,7 @@
 
 # Introduction
 
-DNS was created top provide a way to attach a human-readable name to a piece of technical data. Crypto Wallet Ids seem to fit this model.
+DNS was created to provide a way to attach a human-readable name to a piece of technical data. Crypto Wallet Ids seem to fit this model.
 
 In the past it has been common to use custom DNS records types for different data records, but approval can takes ages and updating the infrastructure takes even longer, so more recently the use of `TXT` records has been preferred.
 
