@@ -2,9 +2,9 @@
 # (c) Copyright 2019-2022, James Stevens ... see LICENSE for details
 # Alternative license arrangements possible, contact me for more information
 
-if test "${SYSLOG_SERVER}"
+if test "${ICO_SYSLOG_SERVER}"
 	then
-		exec /sbin/syslogd -n -b 9 -s 100000 -R ${SYSLOG_SERVER} -L
+		exec /sbin/syslogd -n -R ${ICO_SYSLOG_SERVER}
 	else
 		exec /sbin/syslogd -n -O -
 	fi
