@@ -4,8 +4,8 @@ Run `./dkmk` to make a docker container called `ico-wallet` that will provide an
 to resolve wallet names into wallet ids. By default it uses a certificate from an private ceritifcate authority
 so will not verify, unless you use the `myCA.pem` file to validate the private certificate authority.
 
-If you map or load a Key+Certificate pair into the container at `/opt/certkey.pem`, then `nginx` will use that. This
-is so you can use a verifiable certificate of your choice.
+If you map or load a Key+Certificate pair PEM into the container at `/opt/pems/certkey.pem`, then `nginx` will use that. This
+is so you can use a publicly verifiable certificate of your choice.
 
 If you update the `certkey.pem` file, it will be automatically re-read by `nginx` by checking the date & time
 on the file every hour, on the hour.
