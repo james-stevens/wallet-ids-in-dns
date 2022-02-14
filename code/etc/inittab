@@ -1,0 +1,6 @@
+::respawn:/usr/local/bin/start_syslogd
+::respawn:/usr/local/bin/start_wsgi 1
+::respawn:/usr/local/bin/start_wsgi 2
+::respawn:/usr/local/bin/start_wsgi 3
+::respawn:/usr/local/bin/start_nginx
+::respawn:/usr/sbin/crond -f -c /etc/crontabs -l 9
