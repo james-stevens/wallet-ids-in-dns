@@ -15,6 +15,9 @@ on the file every hour, on the hour.
 The container provides an HTTPS service only. The URL for the api is `/ico/v1/api?name=<wallet-name>`.
 
 
+There is a demo of this container at https://ico.jrcs.net/
+
+
 ## Container Environment Variables
 
 | Variabe Name | Use
@@ -24,7 +27,7 @@ The container provides an HTTPS service only. The URL for the api is `/ico/v1/ap
 | ICO_ICANN_SERVERS | Comma separated list of IP Addresses to send ICANN TLD queries to, using standard DNS over UDP. By default `8.8.8.8` & `1.1.1.1`
 | ICO_HANDSHAKE_SERVERS | Comma separated list of IP Addresses to send Handshake TLD queries to, using standard DNS over UDP, by default `109.169.23.69` (`bridge.jrcs.net`)
 | ICO_ETH_GATEWAY | URL prefix to send ETH/DNS queries to, by default `eth.link/dns-query`
-| ICO_SESSIONS | number of service threads, default=5
+| ICO_WALLET_SESSIONS | number of service threads per session (for 3 sessions), default=3 (threads)
 | ICO_SYSLOG_SERVER | if defined, log to this syslog server, instead of `stdout`
 
 

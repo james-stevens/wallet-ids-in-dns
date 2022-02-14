@@ -1,4 +1,161 @@
 <html>
+<style type='text/css'>
+
+.formPrompt {
+    font-family:Verdana,Arial,Helvetica,sans-serif;
+    font-size:10pt;
+    color: white;
+    text-align: right;
+    }
+
+
+html {
+    color: white;
+    font-family:Verdana,Arial,Helvetica,sans-serif;
+    font-size:10pt;
+    background-color:#666688;
+    scrollbar-base-color:#666699;
+    scrollbar-arrow-color:#ddddff;
+    }
+
+td {
+    font-family:Verdana,Arial,Helvetica,sans-serif;
+    font-size:10pt;
+    vertical-align: top;
+    padding-left: 7px;
+    padding-right: 7px;
+    white-space: nowrap;
+    }
+
+input {
+    color: black;
+    background-color: white;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: 10pt;
+    }
+
+body {
+    color: white;
+    font-family:Verdana,Arial,Helvetica,sans-serif;
+    font-size:10pt;
+    margin-top: 0px;
+    background-color:#666688;
+    scrollbar-base-color:#666699;
+    scrollbar-arrow-color:#ddddff;
+    }
+
+.myBtn {
+    text-align: center;
+    display: inline-block;
+    background-color: #d0d0ff;
+    color: black;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: 10pt;
+    font-weight: bold;
+    border-radius: 25px;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer;
+    margin-top: 0px;
+    margin-left: 10px;
+    margin-bottom: 2px;
+    margin-right: 2px;
+    }
+
+.myBtn:hover {
+    box-shadow: 3px 3px #222244;
+    text-shadow: 1px 1px #ffffff;
+    }
+
+.myBtn:active {
+    position: relative;
+    box-shadow: none;
+    text-shadow: none;
+    top: 1px;
+    left: 1px;
+    }
+
+</style>
+
+
+<script language="Javascript">
+function doLookup()
+{
+    document.body.style.cursor="progress";
+	e = document.getElementById("myResult");
+	if (e) e.innerHTML = "Searching ...";
+	callApi(document.form1.wallet.value,gotResp);
+}
+
+
+function gotResp(resp)
+{
+	x = "<table cellspacing=0 cellpadding=0 border=0><tr><td>{</td></tr>"
+	for(let i in resp) {
+		x = x + `<tr><td>&nbsp;&nbsp;</td><td class=formPrompt align=right>"${i}"&nbsp;:</td><td>&nbsp;`
+		if (typeof(resp[i]) == "string")
+			x = x + `"${resp[i]}"`
+		else
+			x = x + `${resp[i]}`
+		x = x + "</td></tr>"
+		}
+	x = x + "<tr><td>}</td></tr></table>";
+	x = x + `<P>&nbsp;<P><xmp>curl '${window.origin}/ico/v1/api?name=${encodeURIComponent(document.form1.wallet.value)}'`
+	e = document.getElementById("myResult");
+	if (e) e.innerHTML = x;
+	document.body.style.cursor="auto";
+}
+
+function errMsg(msg)
+{
+	e = document.getElementById("myResult");
+	if (e) e.innerHTML = msg;
+	document.body.style.cursor="auto";
+}
+
+
+function callApi(name,callback)
+{
+
+    let url = `${window.location.origin}/ico/v1/api?name=${name}`;
+
+    let httpCmd = {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        };
+
+    fetch(url,httpCmd).then(response => {
+        response.text().then(data => {
+
+            resp = JSON.parse(data);
+
+
+            if ("null" in resp) {
+                errMsg("Unexpected Respose");
+                callback(null);
+                }
+			else {
+				if ("error" in resp) errMsg(resp.error);
+				else callback(resp);
+				}
+            });
+
+        })
+        .catch(err => errMsg(`ERROR: Failed to connect to Server`))
+}
+
+
+
+</script>
 <body>
-<h1>Hello</h1>
+<div style="height: 100px;">&nbsp;</div>
+<table with=50% border=0 align=center>
+<form name=form1 onSubmit="doLookup(); return false">
+<tr><Td><table border=0 width=100%>
+<tr><td class=formPrompt>Wallet name:</td><td><input size=40 autofocus name=wallet value="$btc@jrcs.net/mine"></td></tr>
+<tr><Td align=center colspan=2><input class=MyBtn type=submit value="Lookup Wallet Name"></td></tr>
+</form></table></td></tr>
+<tr><Td colspan=2><div id=myResult></div></td></tr>
+</table>
 </body></html>
