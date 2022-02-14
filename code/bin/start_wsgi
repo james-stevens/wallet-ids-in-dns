@@ -2,5 +2,11 @@
 # (c) Copyright 2019-2022, James Stevens ... see LICENSE for details
 # Alternative license arrangements are possible, contact me for more information
 
+sessions=3
+if test "${ICO_WALLET_SESSIONS}"
+	then
+		sessions=${ICO_WALLET_SESSIONS}
+	fi
+
 cd /usr/local/wallet
-exec gunicorn --bind unix:/ram/ico_$1.sock wsgi
+exec gunicorn --workers=${sessions} --bind unix:/ram/ico_$1.sock wsgi

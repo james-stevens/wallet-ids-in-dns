@@ -17,15 +17,15 @@ RUN ln -s /dev/shm /ram/nginx
 
 RUN addgroup nginx daemon
 
+COPY etc/nginx.conf /etc/nginx/nginx.conf
 COPY etc/crontab /etc/crontabs/root
+COPY etc/inittab /etc/inittab
 COPY etc /usr/local/etc/
-RUN rm -f /etc/inittab /etc/nginx/nginx.conf
-RUN ln -s /ram/inittab /etc/inittab
-RUN ln -s /ram/nginx.conf /etc/nginx/nginx.conf
 
 COPY wallet /usr/local/wallet
 RUN python3 -m compileall /usr/local/wallet
 
 COPY bin /usr/local/bin/
+COPY htdocs /opt/htdocs/
 
-CMD [ "/usr/local/bin/start" ]
+CMD [ "/sbin/init" ]
