@@ -169,15 +169,19 @@ Each part of a DNS hostname can be up to 63 characters. If a wallet id is longer
 
 
 
-### HEX vs BASE64 formats
+### HEX vs BASE58 formats
 
-Cryptocurrency Wallet Ids come in one of two formats, `base64` and `hex`. Base64 ids will be numbers and mixed upper & lower case letter and NOT have an `0x` prefix. Hex ids will start with the prefix `0x` and consist of numbers and the letters `A` to `F` (or `a` to `f`) only. Hex ids are NOT case sensitive, base64 ids ARE case sensitive. They are essentially just different formats for representing the same information as the underlying wallet id is actually binary.
+Cryptocurrency Wallet Ids come in one of two formats, `base58` and `hex`. Base58 ids will be numbers and mixed upper & lower case letter and NOT have an `0x` prefix. Hex ids will start with the prefix `0x` and consist of numbers and the letters `A` to `F` (or `a` to `f`) only. Hex ids are NOT case sensitive, base58 ids ARE case sensitive. They are essentially just different formats for representing the same information as the underlying wallet id is actually binary.
 
 DNS specifications state that DNS host names can be mixed case and that the case of the lettering must be retained, but that host names should be searched for ignoring the case. This case insensitive search requirement can lead to some DNS software folding all names to lower case to make searches faster. Technically this is incorrect, but it can be quite common.
 
 Therefore, if you are using these kinds of "fake" `NS` records to communicate wallet ids to a registry, is is recommended that they are always communicated in `HEX` format, as this is NOT case sensitive. 
 
-It should be possible for a registrar, that supports this specification, to store wallet ids in either `base64` or `hex` format, but convert them to `hex` format for the purposes of communicating them to the registry. Although the end user may find it easier to only specify `hex` in the first place, as this might make it easier for them to check their wallet ids have been communicated to the registry correctly.
+It should be possible for a registrar, that supports this specification, to store wallet ids in either `base58` or `hex` format, but convert them to `hex` format for the purposes of communicating them to the registry. Although the end user may find it easier to only specify `hex` in the first place, as this might make it easier for them to check their wallet ids have been communicated to the registry correctly.
+
+
+You can use [this site](https://appdevtools.com/base58-encoder-decoder) to convert between `hex` & `base58`, you just need to add the 
+the `0x` prefix to the `hex` format before publishing it.
 
 
 ### Notes to registrars
