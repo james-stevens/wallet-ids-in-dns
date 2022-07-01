@@ -2,4 +2,4 @@
 
 docker run \
 	-v /opt/github/wallet-ids-in-dns/code/htdocs:/opt/htdocs \
-	--read-only -it -p 888:443 ico-wallet $*
+	--read-only -it -p 800:80 -p 888:443 ico-wallet $*
