@@ -39,11 +39,11 @@ option of no tag to indicate that to be a default wallet.
 
 ## Wallet Name Format
 
-Wallet names are defined in the same style as URI in the form `<idenifier>`://`[ <currency>@ ]<dns-name>[ /<tag>]`
+Wallet name presentation format is defined in the style of a URI in the form `<idenifier>`://`[ <currency>@ ]<dns-name>[ /<tag>]`
 
-So the record identifier (the fixed string `ico`) in the protocol field, the DNS name in the host name field (less the `_ico.` prefix)
+The record identifier is the fixed string `ico`, in the protocol field. The host name field is the DNS hostname, less the `_ico.` prefix
 and the `tag` as the path. With the currency as an optional prefix to the host name followed by `@`.
-So the full URI for our exmaple wallets would be
+So the full URI for some exmaple wallets could be
 
     ico://my-name.tld/
     ico://ltc@my-name.tld/
@@ -52,9 +52,9 @@ So the full URI for our exmaple wallets would be
 
 In many circumstances the context of the information will make the prefix of the protocol,
 &/or currency, unnecessary. So "please pay me in bitcoin at `my-name.tld`"
-or "please pay `btc@my-name.tld`" can make make the one or two prefixes unnecessary,
-or (for exmaple) if you are specfying a wallet on an auction site that only holds auctions
-in `eth`, then the `eth@` prefix is redundant.
+or "please pay `btc@my-name.tld`" can make make the one or two prefixes unnecessary.
+If you are specfying a wallet on an auction site that only holds auctions
+in `eth`, then specifying an `eth@` prefix becomes redundant.
 
 Where there may be confusion between the shortened version and an email address, but the
 user prefers to not use the full URI style format, prefixing the cryptocurrency name with
