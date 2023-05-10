@@ -13,14 +13,15 @@ The aim is to be able to move from something like "please pay `btc:1AeCyEczAFPVK
 to something more like "please pay `my-name.tld`"
 
 By storing the wallets in DNS `TXT` records, it should be possible to store them in a variety of
-different DNS infrastructures such as the Handshake Blockchain, the ETH/DNS blockchain or any standard DNS zone file.
+different DNS infrastructures such as the Handshake Blockchain, the ETH/DNS blockchain or any (ICANN) standard DNS zone file.
 
 I am fully aware of the [HIP-0002](https://hsd-dev.org/HIPs/proposals/0002/) proposal, I just
 felt it has quite a lot of prerequisites, so creates quite a high barrier to entry. I wanted
 to propose something much simpler & easier to set-up.
+Most Domain Name Registrars offer DNS hosting as part of their domain name service, so a pure DNS solution is more accessible.
 
-It will also take longer to both retrieve & validate than a pure DNS solution.
-The proposal also doesn't seem to describe various areas of functionality I felt needed flashing out.
+HIP-0002 will also take longer to both retrieve & validate than a pure DNS solution
+and proposal also doesn't seem to describe various areas of functionality I felt needed flashing out.
 
 
 
