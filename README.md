@@ -69,23 +69,22 @@ used when specifying the full URI format - `ico://....`.
 
 In DNS the wallet ids will be stored as a `TXT` records with up to three parts
 
-1. A hostname prefix to indicate this is a wallet id, for example `_ico`.
+1. A hostname plus the prefix `_ico.` to indicate this is a wallet id.
 
 2. An option tag in the form `tag:[name]` where `name` conforms to the requirement of a DNS hostname,
 	i.e. a string of up to 63 characters of upper or lower case letters, numbers & hyphen, including support for encoding UTF-8 using [Punycode](https://en.wikipedia.org/wiki/Punycode).
-	No tag or a tag with the reserved word `default` will indicate this is the default wallet for a particular currency.
+	No tag, or a tag with the reserved word `default`, will indicate this is the default wallet for a particular currency.
 
 3. A wallet id, prefixed by the three character cryptocurrency identifier, in lower case ("btc", "eth", "hns", etc)
 
-NOTE: the `_ico.` prefix will *ALWAYS* be removed when using the name in an `ico://` URI, with or without the `ico://` prefix.
+NOTE: the `_ico.` prefix will *ALWAYS* be removed when using the host name in an `ico://` URI, with or without the `ico://` prefix.
 
-When tags are searched, for a matching tag, the search should be case insensitive,
-so it would be permissible to fold tags to lowercase. For a client searching for a matching tag,
-if they have been given no tag or the tag `default`, then this should either match
+When tags are searched, for a matching tag, the search should be case insensitive.
+For a client searching for a matching tag, if they have been given no tag or the tag `default`, then this should either match
 records with no tag or with the tag `default`.
 
 If a tag was provided and no matching tag has been found, and the tag is NOT `default`,
-then the client *MUST* NOT fall back to matching the default tag, but instead give an error.
+then the client *MUST NOT* fall back to matching the default tag, but instead give an error.
 
 
 For example
@@ -100,7 +99,7 @@ Where multiple wallet ids exist for the same currency, with the same tag, which 
 is selected is client-dependant, so should be avoided.
 
 
-Any host name can be used as a holder of a wallet id, so the following would be equally valid
+Any host name, with a `_ico.` prefix, can be used as a holder of a wallet id, so the following would be equally valid
 
     _ico.wallet.my-name.tld. 86400 IN TXT "tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
     _ico.wallet.my-name.tld. 86400 IN TXT "tag:default ltc:Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW"
@@ -111,7 +110,7 @@ Host names that have a `CNAME` should be followed to the target host.
     _ico.cash.name.tld. 86400 IN CNAME _ico.wallet.my-name.tld.
 
 
-If, instead of using a single host name & using `tags`, you could store each wallet id in a different host name
+Instead of using a single host name, & using `tags`, you could store each wallet id in a different host name
 this will slightly improve privacy, but not a lot. For example,
 
     _ico.my-name.tld. 86400 IN TXT "ico btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
@@ -120,6 +119,7 @@ this will slightly improve privacy, but not a lot. For example,
     _ico.biz.my-name.tld. 86400 IN CNAME _ico.business.my-name.tld.
 
 So the URI `ico://btc@my-name.tld/business` has become `ico://btc@business.my-name.tld/`
+
 
 
 ### Notes to Crypto Wallet Hosting Providers
@@ -149,15 +149,10 @@ or
 
 	ico://btc@provider.tld/nickname
 
-(where the `btc@` prefix would be optional, if this was the client's only wallet.
+(where the `btc@` prefix would be optional, if this was the client's only wallet)
 
-
-
-Each will give the client's wallet a slightly different name. The wallet hosting provider
-will have to choose which they prefer, or use some other format within the scope of this specification.
 If they use the first format, they must ensure the client's chosen nicknames do not clash with
-hostnames they are using for technical putposes, e.g. `www`.
-
+hostnames they may be using for technical putposes, e.g. `www`.
 
 
 
@@ -167,23 +162,32 @@ There are two basic DNS rules you may need to know.
 
 #### 1. The CNAME Rule
 
-If a `CNAME` record exists for a host, **NO** other records of any type can exist for that host name. A `CNAME` is like an alias to another host name, so all data must exist at the destination host name, no data can exist at the `CNAME`.
+	If a `CNAME` record exists for a host, **NO** other records of any type can exist for that host name.
+	A `CNAME` is like an alias to another host name, so all data must exist at the destination host name, no data can exist at the `CNAME`.
 
-         _ico.cash.name.tld. 86400 IN CNAME _ico.wallet.my-name.tld.
+			 _ico.cash.name.tld. 86400 IN CNAME _ico.wallet.my-name.tld.
 
-In this example, the name `_ico.cash.name.tld` can **ONLY** have a `CNAME`, so any `TXT` records must exist at the destination host, in this example `wallet.my-name.tld`.
+	In this example, the name `_ico.cash.name.tld` can **ONLY** have a `CNAME`, so any `TXT`
+	records must exist at the destination host, in this example `wallet.my-name.tld`.
 
 
 #### 2. The NS Rule
 
-If a domain has `NS` records it is defined as a sub-domain. All data for the sub-domain can only exist in the zone file for the sub-domain. The only other permitted record type in the parent zone is `DS`, which is used to validate DNSSEC. Any other records types in the parent zone will be silently ignored. In circumstances crcumstances IP Address records can exist, but they **MUST** also be repeated in the sub-domain's zone file.
+	If a domain has `NS` records it is defined as a sub-domain. All data for the sub-domain
+	can only exist in the zone file for the sub-domain. The only other permitted record type
+	in the parent zone is `DS`, which is used to validate DNSSEC. Any other records types in
+	the parent zone will be silently ignored. In circumstances crcumstances IP Address records
+	can exist, but they **MUST** also be repeated in the sub-domain's zone file.
 
-For example
+	For example
 
-        example. 86400 IN NS ns1.example.
-        example. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+			example. 86400 IN NS ns1.example.
+			example. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
 
-In this case the `NS` record defines `example.` as a sub-domain, so the `TXT` record will be silently ignored and instead be placed in the DNS records for the sub-domain. But in this example, IP Addresses records for `ns1.example.` should be provided, but the `NS` records & IP Address records **MUST** also be repeated in the sub-domain data for `example.`.
+	In this case the `NS` record defines `example.` as a sub-domain, so the `TXT` record will
+	be silently ignored and instead be placed in the DNS records for the sub-domain. But in
+	this example, IP Addresses records for `ns1.example.` should be provided, but the `NS`
+	records & IP Address records **MUST** also be repeated in the sub-domain data for `example.`.
 
 
 
