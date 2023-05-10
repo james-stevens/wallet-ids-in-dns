@@ -162,7 +162,7 @@ There are two basic DNS rules you may need to know.
 
 #### 1. The CNAME Rule
 
-	If a `CNAME` record exists for a host, **NO** other records of any type can exist for that host name.
+If a `CNAME` record exists for a host, **NO** other records of any type can exist for that host name.
 	A `CNAME` is like an alias to another host name, so all data must exist at the destination host name, no data can exist at the `CNAME`.
 
 			 _ico.cash.name.tld. 86400 IN CNAME _ico.wallet.my-name.tld.
@@ -173,7 +173,7 @@ There are two basic DNS rules you may need to know.
 
 #### 2. The NS Rule
 
-	If a domain has `NS` records it is defined as a sub-domain. All data for the sub-domain
+If a domain has `NS` records it is defined as a sub-domain. All data for the sub-domain
 	can only exist in the zone file for the sub-domain. The only other permitted record type
 	in the parent zone is `DS`, which is used to validate DNSSEC. Any other records types in
 	the parent zone will be silently ignored. In circumstances crcumstances IP Address records
