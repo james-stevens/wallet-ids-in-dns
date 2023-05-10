@@ -5,9 +5,9 @@
 DNS was created to provide a way to attach a human-readable name to a piece of technical data.
 Crypto Wallet Ids seem to fit this model.
 
-In the past it has been common to use custom DNS records types for different data records,
+In the past it has been common to use custom DNS records types for different data types,
 but approval can takes ages and updating the infrastructure takes even longer, so more
-recently the use of `TXT` records has been preferred.
+recently the use of hostname prefixes and `TXT` records has been preferred.
 
 The aim is to be able to move from something like "please pay `btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m`"
 to something more like "please pay `my-name.tld`"
