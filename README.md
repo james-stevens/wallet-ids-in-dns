@@ -2,97 +2,160 @@
 
 # Introduction
 
-DNS was created to provide a way to attach a human-readable name to a piece of technical data. Crypto Wallet Ids seem to fit this model.
+DNS was created to provide a way to attach a human-readable name to a piece of technical data.
+Crypto Wallet Ids seem to fit this model.
 
-In the past it has been common to use custom DNS records types for different data records, but approval can takes ages and updating the infrastructure takes even longer, so more recently the use of `TXT` records has been preferred.
+In the past it has been common to use custom DNS records types for different data records,
+but approval can takes ages and updating the infrastructure takes even longer, so more
+recently the use of `TXT` records has been preferred.
 
-The aim is to be able to move from something like "please pay `btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m`" to something more like "please pay `my-name.tld`"
+The aim is to be able to move from something like "please pay `btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m`"
+to something more like "please pay `my-name.tld`"
 
-By storing the wallets in DNS `TXT` records, it should be possible to store them in a variety of different DNS infrastructures such as the Handshake Blockchain, the ETH/DNS blockchain or any standard DNS zone file.
+By storing the wallets in DNS `TXT` records, it should be possible to store them in a variety of
+different DNS infrastructures such as the Handshake Blockchain, the ETH/DNS blockchain or any standard DNS zone file.
 
-I am fully aware of the [HIP-0002](https://hsd-dev.org/HIPs/proposals/0002/) proposal, I just felt it has quite a lot of prerequisites, so creates quite a high barrier to entry. I wanted to propose something much simpler & easier to set-up. For example, `DANE` validation is significanly more complex to set up and validate. It will also take longer to both retrieve & validate than my proposal. The proposal also doesn't seem to describe various areas of functionality I felt needed flashing out.
+I am fully aware of the [HIP-0002](https://hsd-dev.org/HIPs/proposals/0002/) proposal, I just
+felt it has quite a lot of prerequisites, so creates quite a high barrier to entry. I wanted
+to propose something much simpler & easier to set-up.
+
+It will also take longer to both retrieve & validate than a pure DNS solution.
+The proposal also doesn't seem to describe various areas of functionality I felt needed flashing out.
 
 
 
 ## Inspiration
-A previous proposal was published by [Mattias Geniar](https://ma.ttias.be/proposal-cryptocurrency-addresses-dns/), which seems pretty reasonable to me, so I've taken inspiration from it.
+A previous proposal was published by [Mattias Geniar](https://ma.ttias.be/proposal-cryptocurrency-addresses-dns/),
+which seems pretty reasonable to me, so I've taken inspiration from it.
 
-In his proposal, Mattias Geniar suggests including a numeric `priority` field, similar to an `MX` record. Although interesting, I think it would be more useful to have a text string "tag" to make it easier to direct people to different wallet ids, with the option of no tag to indicate that to be a default wallet.
+In his proposal, Mattias Geniar suggests including a numeric `priority` field,
+similar to an `MX` record. Although interesting, I think it would be more useful to have
+a text string "tag" to make it easier to direct people to different wallet ids, with the
+option of no tag to indicate that to be a default wallet.
 
 
 # Proposal
 
 ## Wallet Name Format
 
-Wallet names are defined in the same style as URL in the form `<idenifier>`://`[ <currency>@ ]<dns-name>[ /<tag>]`
+Wallet names are defined in the same style as URI in the form `<idenifier>`://`[ <currency>@ ]<dns-name>[ /<tag>]`
 
-So the record identifier (the fixed string `ico`) in the protocol field, the DNS name in the host name field and the `tag` as the path. With the currency as an optional prefix to the host name followed by `@`. So the full URL for our exmaple wallets would be
+So the record identifier (the fixed string `ico`) in the protocol field, the DNS name in the host name field (less the `_ico.` prefix)
+and the `tag` as the path. With the currency as an optional prefix to the host name followed by `@`.
+So the full URI for our exmaple wallets would be
 
-    ico://btc@my-name.tld/
+    ico://my-name.tld/
     ico://ltc@my-name.tld/
     ico://btc@my-name.tld/business
     ico://btc@my-name.tld/biz
 
-In many circumstances the context of the information will make the prefix of the protocol, &/or currency, unnecessary. So "please pay me in bitcoin at `my-name.tld`" or "please pay `btc@my-name.tld`" can make make the one or two prefixes unnecessary, or (for exmaple) if you are specfying a wallet on an auction site that only holds auctions in `eth`, then the `eth@` prefix is redundant.
+In many circumstances the context of the information will make the prefix of the protocol,
+&/or currency, unnecessary. So "please pay me in bitcoin at `my-name.tld`"
+or "please pay `btc@my-name.tld`" can make make the one or two prefixes unnecessary,
+or (for exmaple) if you are specfying a wallet on an auction site that only holds auctions
+in `eth`, then the `eth@` prefix is redundant.
 
-Where there may be confusion between the shortened version and an email address, but the user prefers to not use the full URL style format, prefixing the cryptocurrency name with a dollar (`$`) sign can be used to clarify that this is a crypto wallet name. For example, `$btc@my-name.tld` or `$my-name.tld`. The dollar sign prefix should not be used when specifying the full URL format - `ico://....`.
+Where there may be confusion between the shortened version and an email address, but the
+user prefers to not use the full URI style format, prefixing the cryptocurrency name with
+a dollar (`$`) sign can be used to clarify that this is a crypto wallet name.
+
+For example, `$btc@my-name.tld` or `$my-name.tld`. The dollar sign prefix should not be
+used when specifying the full URI format - `ico://....`.
 
 
 
 ## DNS Storage Format
 
-In DNS the wallet ids will be stored as a `TXT` records with three parts
-1. A record identifier to indicate this is a wallet id, for example `ico` (as per Mattias Geniar suggestion) or `wid` (Wallet id). 
-2. An option tag in the form `tag:[name]` where `name` conforms to the requirement of a DNS hostname, i.e. a string of up to 63 characters of upper or lower case letters, numbers & hyphen, including support for encoding UTF-8 using [Punycode](https://en.wikipedia.org/wiki/Punycode). No tag or a tag with the reserved word `default` will indicate this is the default wallet for a particular currency.
-3. A wallet id, prefixed by the three character cryptocurrency identifier ("btc", "eth", "hns", etc)
+In DNS the wallet ids will be stored as a `TXT` records with up to three parts
 
-When tags are searched for a matching tag, the search should be case insensitive, so it would be permissible to fold tags to lowercase. For a client searching for a matching tag, if they have been given no tag or the tag `default`, then this should either match `TXT` records with no tag or with the tag `default`. However, if a tag was provided and no matching tag has been found, and the tag is NOT `default`, then the client should NOT fall back to matching the default tag, but instead give an error.
+1. A hostname prefix to indicate this is a wallet id, for example `_ico`.
+
+2. An option tag in the form `tag:[name]` where `name` conforms to the requirement of a DNS hostname,
+	i.e. a string of up to 63 characters of upper or lower case letters, numbers & hyphen, including support for encoding UTF-8 using [Punycode](https://en.wikipedia.org/wiki/Punycode).
+	No tag or a tag with the reserved word `default` will indicate this is the default wallet for a particular currency.
+
+3. A wallet id, prefixed by the three character cryptocurrency identifier, in lower case ("btc", "eth", "hns", etc)
+
+NOTE: the `_ico.` prefix will *ALWAYS* be removed when using the name in an `ico://` URI, with or without the `ico://` prefix.
+
+When tags are searched, for a matching tag, the search should be case insensitive,
+so it would be permissible to fold tags to lowercase. For a client searching for a matching tag,
+if they have been given no tag or the tag `default`, then this should either match
+records with no tag or with the tag `default`.
+
+If a tag was provided and no matching tag has been found, and the tag is NOT `default`,
+then the client *MUST* NOT fall back to matching the default tag, but instead give an error.
+
 
 For example
 
-    my-name.tld. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
-    my-name.tld. 86400 IN TXT "ico ltc:Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW"
-    my-name.tld. 86400 IN TXT "ico tag:business btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
-    my-name.tld. 86400 IN TXT "ico tag:biz btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
+    _ico.my-name.tld. 86400 IN TXT "tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+    _ico.my-name.tld. 86400 IN TXT "ltc:Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW"
+    _ico.my-name.tld. 86400 IN TXT "tag:business btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
+    _ico.my-name.tld. 86400 IN TXT "tag:biz btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
 
 
-Where multiple wallet ids exist for the same currency, with the same tag, which actual wallet is selected is client-dependant, so should be avoided.
+Where multiple wallet ids exist for the same currency, with the same tag, which actual wallet
+is selected is client-dependant, so should be avoided.
 
 
 Any host name can be used as a holder of a wallet id, so the following would be equally valid
 
-    wallet.my-name.tld. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
-    wallet.my-name.tld. 86400 IN TXT "ico tag:default ltc:Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW"
+    _ico.wallet.my-name.tld. 86400 IN TXT "tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+    _ico.wallet.my-name.tld. 86400 IN TXT "tag:default ltc:Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW"
 
 
 Host names that have a `CNAME` should be followed to the target host.
 
-    cash.name.tld. 86400 IN CNAME wallet.my-name.tld.
+    _ico.cash.name.tld. 86400 IN CNAME _ico.wallet.my-name.tld.
 
 
-If, instead of using a single host name & using `tags`, you store each wallet id in a different host name this will slightly improve privacy, but not a lot. For example,
+If, instead of using a single host name & using `tags`, you could store each wallet id in a different host name
+this will slightly improve privacy, but not a lot. For example,
 
-    my-name.tld. 86400 IN TXT "ico btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
-    my-name.tld. 86400 IN TXT "ico ltc:Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW"
-    business.my-name.tld. 86400 IN TXT "ico btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
-    biz.my-name.tld. 86400 IN TXT "ico btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
+    _ico.my-name.tld. 86400 IN TXT "ico btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+    _ico.my-name.tld. 86400 IN TXT "ico ltc:Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW"
+    _ico.business.my-name.tld. 86400 IN TXT "ico btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
+    _ico.biz.my-name.tld. 86400 IN CNAME _ico.business.my-name.tld.
+
+So the URI `ico://btc@my-name.tld/business` has become `ico://btc@business.my-name.tld/`
 
 
 ### Notes to Crypto Wallet Hosting Providers
 
-It should be relatively trivial for wallet hosting providers to automatically (or optionally) publish their client's wallet ids in this format. They can either do this in their main domain name, or in a separate domain registered for the purposes.
+It should be relatively trivial for wallet hosting providers to automatically (or optionally)
+publish their client's wallet ids in this format. They can either do this in their main domain name,
+or in a separate domain registered for the purposes.
 
-It is **highly** recommended that they do NOT use the user's account name as any part of the wallet name, as this could present an unnecessary security risk. Instead they could offer the client to provide a "nickname" for their wallet that can be unrelated to the client's login credentials.
+It is **highly** recommended that they do NOT use the user's account name as ANY part of
+the wallet name, as this could present an unnecessary security risk. Instead they could
+offer the client to provide a "nickname" for their wallet that can be unrelated to the
+client's login credentials.
 
 The wallet hosting provider can then publish the wallet ids in one of two formats
 
-        nickname.provider.tld. 86400 IN TXT "ico btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+	_ico.nickname.provider.tld. 86400 IN TXT "ico btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
 
 or
 
-        provider.tld. 86400 IN TXT "ico tag:nickname btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+	_ico.provider.tld. 86400 IN TXT "ico tag:nickname btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
 
-Each will give the client's wallet a slightly different name. The wallet hosting provider will have to choose which they prefer, or use some other format within the scope of this specification. If they use the first format, they must ensure the client's chosen nicknames do not clash with hostnames they are using for technical putposes, e.g. `www`.
+These examples would give the client's wallet the names
+
+	ico://btc@nickname.provider.tld/
+
+or
+
+	ico://btc@provider.tld/nickname
+
+(where the `btc@` prefix would be optional, if this was the client's only wallet.
+
+
+
+Each will give the client's wallet a slightly different name. The wallet hosting provider
+will have to choose which they prefer, or use some other format within the scope of this specification.
+If they use the first format, they must ensure the client's chosen nicknames do not clash with
+hostnames they are using for technical putposes, e.g. `www`.
 
 
 
@@ -105,9 +168,9 @@ There are two basic DNS rules you may need to know.
 
 If a `CNAME` record exists for a host, **NO** other records of any type can exist for that host name. A `CNAME` is like an alias to another host name, so all data must exist at the destination host name, no data can exist at the `CNAME`.
 
-         cash.name.tld. 86400 IN CNAME wallet.my-name.tld.
+         _ico.cash.name.tld. 86400 IN CNAME _ico.wallet.my-name.tld.
 
-In this example, the name `cash.name.tld` can **ONLY** have a `CNAME`, so any `TXT` records must exist at the destination host, in this example `wallet.my-name.tld`.
+In this example, the name `_ico.cash.name.tld` can **ONLY** have a `CNAME`, so any `TXT` records must exist at the destination host, in this example `wallet.my-name.tld`.
 
 
 #### 2. The NS Rule
