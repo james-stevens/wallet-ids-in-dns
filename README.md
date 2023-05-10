@@ -163,118 +163,91 @@ There are two basic DNS rules you may need to know.
 #### 1. The CNAME Rule
 
 If a `CNAME` record exists for a host, **NO** other records of any type can exist for that host name.
-	A `CNAME` is like an alias to another host name, so all data must exist at the destination host name, no data can exist at the `CNAME`.
+A `CNAME` is like an alias to another host name, so all data must exist at the destination host name,
+no other data can exist at the `CNAME`.
 
-			 _ico.cash.name.tld. 86400 IN CNAME _ico.wallet.my-name.tld.
+	_ico.cash.name.tld. 86400 IN CNAME _ico.wallet.my-name.tld.
 
-	In this example, the name `_ico.cash.name.tld` can **ONLY** have a `CNAME`, so any `TXT`
-	records must exist at the destination host, in this example `wallet.my-name.tld`.
+In this example, the name `_ico.cash.name.tld` can **ONLY** have a `CNAME`, so any `TXT`
+records must exist at the destination host, in this example `_ico.wallet.my-name.tld`.
 
 
 #### 2. The NS Rule
 
 If a domain has `NS` records it is defined as a sub-domain. All data for the sub-domain
-	can only exist in the zone file for the sub-domain. The only other permitted record type
-	in the parent zone is `DS`, which is used to validate DNSSEC. Any other records types in
-	the parent zone will be silently ignored. In circumstances crcumstances IP Address records
-	can exist, but they **MUST** also be repeated in the sub-domain's zone file.
+can only exist in the zone file for the sub-domain. The only other permitted record type
+in the parent zone is `DS`, which is used to validate DNSSEC.
 
-	For example
+Any other records types in
+the parent zone will be silently ignored. In special crcumstances IP Address records
+can exist, but they **MUST** also be repeated in the sub-domain's zone file.
 
-			example. 86400 IN NS ns1.example.
-			example. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+For example
 
-	In this case the `NS` record defines `example.` as a sub-domain, so the `TXT` record will
-	be silently ignored and instead be placed in the DNS records for the sub-domain. But in
-	this example, IP Addresses records for `ns1.example.` should be provided, but the `NS`
-	records & IP Address records **MUST** also be repeated in the sub-domain data for `example.`.
+	example. 86400 IN NS ns1.example.
+	example. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
+
+In this case the `NS` record defines `example.` as a sub-domain, so the `TXT` record will
+be silently ignored and instead *MUST* be placed in the DNS data (zone file) for the sub-domain.
+
+But in, this example, IP Addresses records for `ns1.example.` should be provided, but the `NS`
+records & IP Address records **MUST** also be repeated in the sub-domain data for `example.`.
 
 
 
 ### DNS and Security
 
-In order to ensure your wallet ids can not be tampered with (e.g. DNS poisoning), when storing your wallet names & ids in standard DNS zone data, it is **highly** recommended that the DNS zone that stores your wallet ids is signed, using DNSSEC. That way the client can cryptographically validate the data.
+In order to ensure your wallet ids can not be tampered with (e.g. DNS poisoning),
+when storing your wallet names & ids in standard DNS zone data, it is **highly**
+recommended that the DNS zone that stores your wallet ids is signed, using DNSSEC.
+That way the client can cryptographically validate the wallet ids they received are the ones you entered.
 
-If the records are being stored in a blockchain backed DNS technology, this is not required / relevant.
+If the records are being stored in a blockchain backed DNS technology, this may not be required / relevant.
 
-
-# Storing A Wallet in a TLD Zone
-
-If you only wish to use a domain name as a wallet identifier, then it could be possible to store the wallet's `TXT` records in the upper level zone file. This has the advantage, to the owner, of meaning they do not need to provide/run any infrastrucutre to give their wallets a name.
-
-As most domain registration is done using the `EPP` protocol, and there is no `EPP` extension for this, this proposal suggests a work-around that enables existing domain name registration software to support this.
-
-To achieve this, it is proposed that the name server (`NS`) records specified for the domain name have a special prefix that indicates they should be read as wallet ids. These are effectively "fake" `NS` records, as the registry will be require to translate them into `TXT` records, as above.
-
-So this proposal is the fake `NS` consist of the following parts
-1. The fixed identification prefix, for example `zz--wallet`
-2. An optional tag
-3. The cryptocurrency identifier consisiting of three alphabetic characters. This can be folded to lower case.
-4. The wallet identifier
-5. The domain name these wallets are being registered in
-
-So, for example, if we have just registered the domain name `my-name.tld` and we wish to **only** use it as a crypto wallet identification, we could specify the follow fake `NS` records to achieve the wallet set up above
-
-    zz--wallet.btc.1AeCyEczAFPVKkvausLSQWP1jcqkccga9m.my-name.tld.
-    zz--wallet.ltc.Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW.my-name.tld.
-    zz--wallet.business.ltc.Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW.my-name.tld.
-    zz--wallet.biz.ltc.Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW.my-name.tld.
-
-Once these have been parsed by the registry, they would create the following `TXT` records.
-
-    my-name.tld. 86400 IN TXT "ico tag:default btc:1AeCyEczAFPVKkvausLSQWP1jcqkccga9m"
-    my-name.tld. 86400 IN TXT "ico tag:default ltc:Lh1TUmh2WP4LkCeDTm3kMX1E7NQYSKyMhW"
-    my-name.tld. 86400 IN TXT "ico tag:business btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
-    my-name.tld. 86400 IN TXT "ico tag:biz btc:SQWP1jcqkccga9m1AeCyEczAFPVKkvausL"
-
-The advantage, to the owner, of supporting this functionality in the registry is that
-1. The wallets ids will resolve and validate quicker
-2. The registry is already publishing & signing the DNS, so the owner does not need to run any additional servers or services
-
-If you wish to use your domain name as **both** a DNS domain name and a cryptocurrency wallet identifier, then you will need to use a DNS hosting provider & point real (not fake) `NS` records to your hosting provider in the normal way. Then create all your records within the zone on your DNS hosting provider.
-
-Each part of a DNS hostname can be up to 63 characters. If a wallet id is longer than 63 characters, it can be split using a period (`.`). This should be automatically detected by the registry and the id should be reformed into a single string, omitting the period, before the wallet id is put into the `TXT` record.
-
-
-
-### HEX vs BASE58 formats
-
-Cryptocurrency Wallet Ids come in one of two formats, `base58` and `hex`. Base58 ids will be numbers and mixed upper & lower case letter and NOT have an `0x` prefix. Hex ids will start with the prefix `0x` and consist of numbers and the letters `A` to `F` (or `a` to `f`) only. Hex ids are NOT case sensitive, base58 ids ARE case sensitive. They are essentially just different formats for representing the same information as the underlying wallet id is actually binary.
-
-DNS specifications state that DNS host names can be mixed case and that the case of the lettering must be retained, but that host names should be searched for ignoring the case. This case insensitive search requirement can lead to some DNS software folding all names to lower case to make searches faster. Technically this is incorrect, but it can be quite common.
-
-Therefore, if you are using these kinds of "fake" `NS` records to communicate wallet ids to a registry, is is recommended that they are always communicated in `HEX` format, as this is NOT case sensitive. 
-
-It should be possible for a registrar, that supports this specification, to store wallet ids in either `base58` or `hex` format, but convert them to `hex` format for the purposes of communicating them to the registry. Although the end user may find it easier to only specify `hex` in the first place, as this might make it easier for them to check their wallet ids have been communicated to the registry correctly.
-
-
-You can use [this site](https://appdevtools.com/base58-encoder-decoder) to convert between `hex` & `base58`, you just need to add the 
-the `0x` prefix to the `hex` format before publishing it.
 
 
 ### Notes to registrars
 
-Domain Name Registrars that want to support this functionality should provide their clients with a user interface that knows about, stores & prompts the users for wallet ids & cryptocurrencies, instead of requiring the user to know about this specification and make the `TXT` records themselves.
+Domain Name Registrars that want to support this functionality should provide their clients
+with a user interface that knows about, stores & prompts the users for wallet ids & cryptocurrencies,
+instead of requiring the user to know about this specification and make the `TXT` records themselves.
 
 
 
 # Advice to Clients
 
-Client software & UI/UX's wishing to make a payment can now do a simple DNS lookup to retrieve the wallets ids of the person to be paid. This should be done at the time the payer enters the address, so they know immediately if a wallet id can be found for the wallet address they have just given.
+Client software & UI/UX's wishing to make a payment can now do a simple DNS lookup to retrieve
+the wallets ids of the person to be paid. This should be done at the time the payer enters
+the address, so they know immediately if a wallet id can be found for the wallet address they have just given.
 
-Where a wallet tag has been specified, but can not be found, the client should not fall back to any default wallet (if present), but instead present the payer with an error message. DNS is usually sufficiently fast that it should be relatively trivial to do a look up live.
+Where a wallet tag has been specified, but can not be found, the client should not fall back
+to any default wallet (if present), but instead present the payer with an error message.
+DNS is usually sufficiently fast that it should be relatively trivial to do a look up live.
 
-Where no `TXT` records exist for the wallet name given, payers should also be warned at the time the wallet name is presented.
+Where no `TXT` records exist for the wallet name given, payers should also be warned at
+the time the wallet name is presented.
 
-All clients should support accepting wallet names in full unicode format, allowing for the full range of unicode characters, then automatically convert the host name & (optional) tag into punycode. It is likely accepting the user's input in UTF-8 will be the most convenient for this. Library code for doing a UTF-8 to punycode conversion is available in many development environments / programming languages.
+All clients should support accepting wallet names in full unicode format, allowing for the
+full range of unicode characters, then automatically convert the host name & (optional) tag
+into punycode. It is likely accepting the user's input in UTF-8 will be the most convenient for this.
+Library code for doing a UTF-8 to punycode conversion is available in many development environments / programming languages.
 
-If a wallet name is supplied that excludes a coin name, the client should select any one with a matching hostname and (optional) tag. Where more than one matching wallet name exists, which the client selects is not determined, so this should be avoided.
+If a wallet name is supplied that excludes a coin name, the client should select any one
+with a matching hostname and (optional) tag. Where more than one matching wallet name exists,
+which the client selects is not determined, so this should be avoided.
+
+If the payee has signed their zone with DNSSEC the client SHOULD do DNSSEC validation. If this validation 
+fails the payment *MUST NOT* be made, and the client should give the user an appropriate error message.
 
 
-# Reserve Wallet Id Lookup
+# Reverse Wallet Id Lookup
 
-DNS provides a mechanism for both forward & reverse lookup for host names & their IP Addresses. That is, if you know a host name you can lookup an IP Address, and if you know an IP Address you can look up a hostname.
+DNS provides a mechanism for both forward & reverse lookup for host names & their IP Addresses.
+That is, if you know a host name you can lookup an IP Address, and if you know an IP Address you can look up a hostname.
 
-This proposal suggests a way to know a wallet name & look up a wallet id / address. It might be nice to have a facility to know a wallet id & lookup a wallet name. For example, so you can get a wallet name of somebody who just paid you.
+This proposal suggests a way to know a wallet name & look up a wallet id / address.
+It might be nice to have a facility to know a wallet id & lookup a wallet name.
+For example, so you can get a wallet name of somebody who just paid you.
 
-This would require a single jump-off point for the look-up & somebody to run that. Therefore, although this may be desirable, this is considered outside of the scope of this document, for the time being.
+This would require a single jump-off point for the look-up & somebody to run that.
+Therefore, although this may be desirable, this is considered outside of the scope of this document, for the time being.
