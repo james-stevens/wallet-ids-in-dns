@@ -27,7 +27,7 @@ and proposal also doesn't seem to describe various areas of functionality I felt
 
 ## Inspiration
 A previous proposal was published by [Mattias Geniar](https://ma.ttias.be/proposal-cryptocurrency-addresses-dns/),
-which seems pretty reasonable to me, so I've taken inspiration from it.
+which seems pretty reasonable to me, so I've taken a lot of inspiration from it.
 
 In his proposal, Mattias Geniar suggests including a numeric `priority` field,
 similar to an `MX` record. Although interesting, I think it would be more useful to have
